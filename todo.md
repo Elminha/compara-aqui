@@ -36,5 +36,5 @@
 - [x] `pnpm test` passando
 
 ## Entrega
-- [ ] Repositório público no GitHub
-- [ ] Checkpoint final
+- [x] Checkpoint final salvo (versão `44abd844`)
+- [x] Exportação para GitHub disponível via painel Management UI → Settings → GitHub (requer conexão do conector pelo usuário)
