@@ -1,3 +1,4 @@
+// server/routers.ts
 import { COOKIE_NAME } from "@shared/const";
 import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -21,6 +22,9 @@ import {
   detectFakeDiscount,
   translateSpecValue,
 } from "@shared/domain";
+
+// 🆕 Import das funções do Mercado Livre
+import { buscarProdutosML, buscarProdutoPorIdML } from "./mlApi";
 
 const categoryEnum = z.enum(["smartphones", "notebooks", "tvs", "eletrodomesticos"]);
 
@@ -251,6 +255,50 @@ export const appRouter = router({
           specRows: rows,
           realCostWinner,
         };
+      }),
+  }),
+
+  // 🆕🆕🆕 SEÇÃO MERCADO LIVRE - NOVAS ROTAS 🆕🆕🆕
+  mercadoLivre: router({
+    buscarProdutos: publicProcedure
+      .input(z.object({
+        termo: z.string().min(1, "Digite um termo para buscar"),
+        limite: z.number().min(1).max(50).default(30)
+      }))
+      .query(async ({ input }) => {
+        try {
+          console.log(`🔍 Buscando Mercado Livre: ${input.termo}`);
+          const produtos = await buscarProdutosML(input.termo, input.limite);
+          return {
+            sucesso: true,
+            produtos: produtos,
+            total: produtos.length,
+            termo: input.termo
+          };
+        } catch (error) {
+          console.error('Erro na rota mercadoLivre.buscarProdutos:', error);
+          return {
+            sucesso: false,
+            produtos: [],
+            total: 0,
+            erro: error instanceof Error ? error.message : 'Erro desconhecido'
+          };
+        }
+      }),
+      
+    buscarProduto: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const produto = await buscarProdutoPorIdML(input.id);
+          return { sucesso: true, produto };
+        } catch (error) {
+          console.error('Erro na rota mercadoLivre.buscarProduto:', error);
+          return { 
+            sucesso: false, 
+            erro: error instanceof Error ? error.message : 'Produto não encontrado' 
+          };
+        }
       }),
   }),
 });
